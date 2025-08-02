@@ -1,5 +1,86 @@
 ---
-title: "Relatório Mensal - IPCA"
+title: "Relatório Mensal"
+subtitle: "Análise do IPCA - IBGE"
+date: last-modified
+lang: pt
 format: html
+author: "DIC-RF"
+title-block-banner: "#0f0c0fff"
+execute: 
+  echo: false
+  warning: false
 ---
 
+```{python}
+# Instalando bibliotecas e importando-as
+import pandas as pd
+import sidrapy
+from bcb import sgs
+from bcb import Expectativas
+import dbnomics
+import datetime
+import matplotlib as mt
+import plotnine as p9
+```
+
+```{python}
+# Coletando dados importantes e tratando
+
+# Sidra - IPCA
+dados_ipca = (
+    sidrapy.get_table(
+        table_code="7060",
+        territorial_level="1",
+        ibge_territorial_code="all",
+        variable="63,69,2265,66",
+        classifications= {"315": "7169,7170,7445,7486,7558,7625,7660,7712,7766,7786"},
+        period = "all"
+    )
+)
+
+# Metas BCB
+meta = (
+   sgs.get(
+    codes={"Meta": 13521}
+   ) 
+)
+
+
+# Núcleos 
+
+Núcleos_IPCA = (
+    sgs.get(
+        {
+         "IPCA-P55": 28750,
+         "IPCA-DP": 16122,
+         "IPCA-MS": 4466,
+         "IPCA-EX3": 27839,
+         "IPCA-EX0": 11427
+        }
+    )       
+)
+
+# Desagregação 
+
+dados_brutos_classificacoes = (
+  sgs.get(
+      codes =
+          {"Comercializáveis": 4447,
+           "Não comercializáveis": 4448,
+           "Industriais": 27863,
+           "Serviços": 10844,
+           "Monitorados": 4449,
+           "Alimentação no domicílio": 27864,
+           "Livres": 11428
+          }
+)
+)
+
+# Difusão
+
+indice_difusao = (
+ sgs.get(
+     {"Difusão": 21379}
+ )
+)
+```
