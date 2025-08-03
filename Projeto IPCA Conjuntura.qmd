@@ -51,11 +51,11 @@ meta = (
 Núcleos_IPCA = (
     sgs.get(
         {
-         "IPCA-P55": 28750,
-         "IPCA-DP": 16122,
-         "IPCA-MS": 4466,
-         "IPCA-EX3": 27839,
-         "IPCA-EX0": 11427
+         "P55": 28750,
+         "DP": 16122,
+         "MS": 4466,
+         "EX3": 27839,
+         "EX0": 11427
         }
     )       
 )
@@ -65,14 +65,15 @@ Núcleos_IPCA = (
 dados_brutos_classificacoes = (
   sgs.get(
       codes =
-          {"Comercializáveis": 4447,
-           "Não comercializáveis": 4448,
-           "Industriais": 27863,
-           "Serviços": 10844,
-           "Monitorados": 4449,
-           "Alimentação no domicílio": 27864,
-           "Livres": 11428
-          }
+          {"comercializaveis": 4447,
+           "nao_comercializaveis": 4448,
+           "industriais": 27863,
+           "servicos": 10844,
+           "monitorados": 4449,
+           "alimentacao_no_domicilio": 27864,
+           "livres": 11428
+          },
+          start = '2000-01-01'
 )
 )
 
@@ -84,3 +85,151 @@ indice_difusao = (
  )
 )
 ```
+
+```{python}
+
+
+# Tratamento dos dados
+
+# Sidra - IPCA
+dados_IPCA_tratado = (
+    dados_ipca
+    .rename(
+        columns={"V":"valor", "D2C": "data", "D3N": "variavel", "D4N": "grupo"}
+    )
+    .filter(
+        items = ["data", "valor", "variavel", "grupo"]
+    )
+    .query(
+        "valor not in ['Valor'] & valor not in ['...']"
+    )
+    .assign(
+        data = lambda x: pd.to_datetime(x['data'], format = "%Y%m"),
+        valor = lambda x: x.valor.astype(float)
+    )
+    .replace(
+        to_replace="IPCA - Variação mensal",
+        value="variação % mensal"
+    )
+    .replace(
+        to_replace="IPCA - Variação acumulada no ano",
+        value="variação % ano"
+    )
+    .replace(
+        to_replace="IPCA - Variação acumulada em 12 meses",
+        value = "variação % 12 meses"
+    )
+    .replace(
+        to_replace="IPCA - Peso mensal",
+        value="Peso mensal"
+    )
+    .pivot(index= ['data', 'grupo'], columns='variavel', values = 'valor')
+)
+
+
+# Meta BCB
+meta_tratado = (
+    meta
+    .reset_index()
+    .rename(
+        columns={"Date": "data"}
+    )
+    .rename(
+        {"Meta": "meta"}, axis = "columns"
+    )
+    .assign(
+        data = lambda x: pd.to_datetime(x['data'], format = "%Y-%M-%D"),
+        meta = lambda x: x.meta.astype(float)
+    )
+    .set_index('data')
+)
+
+
+# Núcleos
+
+nucleos_tratado = (
+    Núcleos_IPCA
+    .assign(
+        P55 = lambda x: x['P55'].astype(float),
+        DP = lambda x: x['DP'].astype(float),
+        MS = lambda x: x['MS'].astype(float),
+        EX3 = lambda x: x['EX3'].astype(float),
+        EX0 = lambda x: x['EX0'].astype(float),
+        media_nucleos = lambda x: x.mean(axis = 1)
+    )
+    .reset_index()
+    .rename(
+        {"Date": "data"}, axis = "columns"
+    )
+    
+    .set_index('data')
+)
+
+
+nucleos_tratado_12m = (
+    nucleos_tratado
+    .rolling(window = 12)
+    .apply(
+        lambda x: ((1+x/100).prod() - 1) * 100, raw=False)
+    )
+
+
+
+# Dados Classificações IPCA
+
+dados_brutos_classificacoes_tratado = (
+    dados_brutos_classificacoes
+    .reset_index()
+    .rename(
+        {"Date": "data"}, axis = "columns"
+    )
+    .assign(
+        data = lambda x: pd.to_datetime(x['data'], format = "%Y-%M-%D")
+    )
+    .set_index('data')
+)
+
+dados_brutos_classificacoes_tratado_12M = (
+    dados_brutos_classificacoes
+    .reset_index()
+    .rename(
+        {"Date": "data"}, axis = "columns"
+    )
+    .assign(
+        data = lambda x: pd.to_datetime(x['data'], format = "%Y-%M-%D")
+    )
+    .set_index('data')
+    .rolling(window = 12)
+    .apply(lambda x: ((x/100 + 1).prod()-1) * 100, raw = False)
+)
+
+# Difusão
+
+difusao_tratado = (
+    indice_difusao
+    .reset_index()
+    .assign(
+        Date = lambda x: pd.to_datetime(x["Date"], format = "%Y-%M-%D")
+    )
+    .rename(
+        {"Difusão": "difusao", "Date": "data"}, axis = "columns"
+    )
+    .set_index('data')
+)   
+
+
+```
+
+::: grid
+::: g-col-7
+## *Headline*
+
+Destaques do mês:
+
+-   IPCA do mês registra variação de
+:::
+
+::: g-col-5
+This column takes 2/3 of the page
+:::
+:::
