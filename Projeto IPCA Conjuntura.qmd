@@ -124,6 +124,8 @@ dados_IPCA_tratado = (
         value="Peso mensal"
     )
     .pivot(index= ['data', 'grupo'], columns='variavel', values = 'valor')
+    .reset_index()
+    
 )
 
 
@@ -230,6 +232,84 @@ Destaques do mês:
 :::
 
 ::: g-col-5
-This column takes 2/3 of the page
+
+```{python}
+grafico_ipca_meta = (
+    dados_IPCA_tratado
+    .query("grupo == 'Índice geral'")
+    .filter(items = ['data', 'grupo', 'variação % mensal', 'variação % 12 meses'])
+    .query("data >= '2020-12-31'")
+    .set_index('data')
+    .join(other = meta_tratado, on = 'data', how = 'left')
+    .ffill(axis = 'index')
+    .melt(
+        value_vars=['variação % mensal', 'variação % 12 meses', 'meta'],
+        ignore_index=False,
+        value_name='valores'
+         )
+    .reset_index()
+         )
+
+
+from plotnine import element_blank
+import datetime
+from mizani.formatters import date_format
+last_points = grafico_ipca_meta.sort_values('data').groupby('variable').tail(1)
+
+
+cores = {
+    "variação % mensal": "blue",
+    "meta": "red",
+    "variação % 12 meses": "#ff8100"
+}
+
+estilos = {
+    "variação % mensal": "solid",
+    "meta": "dashed",
+    "variação % 12 meses": "dotted"
+}
+
+
+(
+    p9.ggplot(grafico_ipca_meta) +
+    p9.aes(
+        x = 'data', y = 'valores', color = 'variable', linetype = 'variable') +
+    p9.geom_line() + 
+    p9.scale_color_manual(values = cores) + 
+    p9.scale_linetype_manual(values = estilos) +  
+    p9.labs(
+        title='Inflação Headline - IPCA',
+        x = '',
+        y = ""
+    ) + 
+    p9.theme_minimal() + 
+    p9.theme(
+        legend_position='top',
+        legend_title=element_blank(),
+        plot_title= p9.element_text(weight = 'bold', size = 14),
+        axis_text= p9.element_text(color = 'black'),
+        panel_grid_major_x=p9.element_line(color='gray', size=0.3),
+        panel_grid_major_y=p9.element_line(color='gray', size=0.3),
+        panel_grid_minor=element_blank(), 
+        panel_border = p9.element_rect(fill=None, color='black', size=0.5),
+        figure_size=(3.6, 3)
+    ) + 
+    p9.scale_x_date(date_breaks='1 year', labels=date_format('%Y')) + 
+    p9.geom_label(
+        data=last_points,
+        mapping=p9.aes(label='valores'),
+        fill = ['#ff8100', 'blue', 'red'],
+        color = 'white',
+        ha='left',
+        va='center',
+        nudge_x=3,
+        size=7, 
+        fontweight='bold' 
+    )
+)
+```
+
+
+
 :::
 :::
