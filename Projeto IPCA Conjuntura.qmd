@@ -222,23 +222,23 @@ difusao_tratado = (
 
 ```
 
-::: grid
-::: g-col-7
+
 ## *Headline*
 
 Destaques do mês:
 
--   IPCA do mês registra variação de
-:::
+O IPCA do mês registrou variação de X%, refletindo os movimentos recentes nos preços dos principais grupos pesquisados. Destacam-se as contribuições de alimentação, transportes e habitação, que apresentaram comportamentos distintos em relação ao mês anterior. O resultado mantém a inflação acumulada em 12 meses dentro do intervalo das metas estabelecidas pelo Banco Central, indicando um cenário de estabilidade, apesar de pressões pontuais em alguns segmentos.
 
-::: g-col-5
+
+
 
 ```{python}
+#| fig-align: center
 grafico_ipca_meta = (
     dados_IPCA_tratado
     .query("grupo == 'Índice geral'")
     .filter(items = ['data', 'grupo', 'variação % mensal', 'variação % 12 meses'])
-    .query("data >= '2020-12-31'")
+    .query("data >= '2022-12-31'")
     .set_index('data')
     .join(other = meta_tratado, on = 'data', how = 'left')
     .ffill(axis = 'index')
@@ -286,13 +286,12 @@ estilos = {
     p9.theme(
         legend_position='top',
         legend_title=element_blank(),
-        plot_title= p9.element_text(weight = 'bold', size = 14),
+        plot_title= p9.element_text(weight = 'bold'),
         axis_text= p9.element_text(color = 'black'),
         panel_grid_major_x=p9.element_line(color='gray', size=0.3),
         panel_grid_major_y=p9.element_line(color='gray', size=0.3),
         panel_grid_minor=element_blank(), 
-        panel_border = p9.element_rect(fill=None, color='black', size=0.5),
-        figure_size=(3.6, 3)
+        panel_border = p9.element_rect(fill=None, color='black', size=0.5)
     ) + 
     p9.scale_x_date(date_breaks='1 year', labels=date_format('%Y')) + 
     p9.geom_label(
@@ -311,5 +310,60 @@ estilos = {
 
 
 
-:::
-:::
+
+
+
+
+
+```{python}
+#| fig-align: center
+grafico_variacao_grupo = (
+    dados_IPCA_tratado
+    .query(
+        "grupo not in ['Índice geral'] & grupo not in ['...']"
+    )
+    .filter(
+        items = ['data', 'grupo', 'variação % mensal']
+    )
+    .loc[lambda x: x['data'] == x['data'].max()]
+    .assign(
+        grupo = lambda x: x['grupo'].str.replace(r'\d\.', '', regex = True).str.strip()
+    )
+    .assign(
+        cor = lambda x: x['variação % mensal'].apply(lambda x: 'positivo' if x > 0 else 'negativo')
+    )
+)
+
+
+(
+    p9.ggplot(grafico_variacao_grupo) + 
+    p9.geom_col(p9.aes(x = 'grupo', y = 'variação % mensal', fill = 'cor')) + 
+    p9.coord_flip() + 
+    p9.labs(
+        title = 'IPCA por grupo',
+        caption = 'Elaborado por Davidson Loiolla',
+        x = '',
+        y = ''
+    ) +
+    p9.scale_fill_manual(
+        values = {'positivo': '#27F5D3', 'negativo': '#F5276F'},
+        guide=None
+    ) + 
+    p9.theme(
+        plot_title= p9.element_text(weight = 'bold'),
+        legend_title=element_blank()
+
+    )
+    
+    )
+
+
+
+
+
+
+
+
+```
+
+
