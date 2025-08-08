@@ -21,10 +21,10 @@ jobs:
       with:
         python-version: "3.11"
 
-    - name: Install Python dependencies
+    - name: Install Python dependencies (no cache)
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install --no-cache-dir -r requirements.txt
 
     - name: Render Quarto report
       run: quarto render "Projeto IPCA Conjuntura.qmd" --to html
