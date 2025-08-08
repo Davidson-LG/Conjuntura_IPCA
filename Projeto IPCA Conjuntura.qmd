@@ -333,7 +333,7 @@ grafico_variacao_grupo = (
         y = ''
     ) +
     p9.scale_fill_manual(
-        values = {'positivo': '#27F5D3', 'negativo': '#F5276F'},
+        values = {'positivo': '#414fb5', 'negativo': '#F5276F'},
         guide=None
     ) + 
     p9.theme(
@@ -352,3 +352,213 @@ grafico_variacao_grupo = (
 
 
 ```
+
+## *Ponderação por grupo*
+
+O grupo de habitação teve a principal contribuição nos preços no último mês. Além disso, observa-se que alimentação e transportes também apresentaram participações relevantes, refletindo movimentos específicos desses segmentos no período analisado.
+
+
+```{python}
+#| fig-align: center
+
+grafico_contribuicao = (
+    dados_IPCA_tratado
+    .filter(
+        items = ['data', 'grupo', 'Peso mensal', 'variação % mensal'],
+        axis='columns'
+    )
+    .replace(
+        to_replace=r'\d\.',
+        value = '',
+        regex = True
+    )
+    .assign(
+        contribuicao = lambda x: (x['Peso mensal'] * x['variação % mensal'])/100
+    )
+    .filter(items = ['data', 'grupo', 'contribuicao'],
+    axis = 'columns')
+    .query(
+        "grupo not in 'Índice geral'"
+    )
+    .query(
+        "data >= '2024-12-31'"
+    )
+)
+
+cores_contribuicao = {
+    'Alimentação e bebidas': '#db7b0d',
+    'Artigos de residência': '#cc2d25',
+    'Comunicação': '#a39d9d',
+    'Despesas pessoais': 'black',
+    'Educação': '#414fb5',
+    'Habitação': '#90a386',
+    'Saúde e cuidados pessoais': '#14dba9',
+    'transportes': '#9411db',
+    'Vestuário': '#db0fdb'
+
+}
+
+
+(
+    p9.ggplot(grafico_contribuicao, p9.aes(x = 'data', y = 'contribuicao', fill = 'grupo')) + 
+    p9.geom_bar(stat = 'identity') + 
+    p9.labs(
+        title = 'Contribuição por grupo',
+        caption = 'Elaborado por DIC-RF | Forluz',
+        x = '',
+        y = ''
+    ) + 
+    p9.theme(
+        plot_title= p9.element_text(weight='bold', ha='center'),
+        legend_title= p9.element_text(weight='bold', ha = 'center'),
+    ) + 
+    p9.scale_x_date(date_labels= "%m-%Y") + 
+    p9.scale_fill_manual(values = cores_contribuicao)
+
+
+)
+
+
+
+
+
+
+```
+
+
+## *Variação em 12 meses: diferentes classificações*
+
+
+Em termos de variação por diferentes grupos de classificação observados pelo Banco Central, vê-se uma redução da média móvel de 12 meses para alguns itens, com destaque para o alívio em alimmentação no domicílio. Bens industriais também respondem positivamente, em meio à apreciação do câmbio. No entanto, os serviços continuam pressionados e sem sinais de arrefecimento mais forte.
+
+
+```{python}
+#| fig-align: center
+
+grafico_classificacao = (
+    dados_brutos_classificacoes_tratado_12M 
+    .reset_index()
+    .query("data >= '2021-12-31'")
+    .melt(
+        id_vars = 'data',
+        value_name = 'variaveis'
+    )
+    .rename(
+        {'variable': 'grupo'},
+        axis = 'columns'
+    )
+)
+
+
+cores_classificacao = {
+    "alimentacao_no_domicilio": "#C7961A",
+    "comercializaveis": "#CCCCCC",
+    "industriais": "#252545",
+    "livres": "#CCCCCC",
+    "monitorados": "#CCCCCC",
+    "nao_comercializaveis": "#CCCCCC",
+    "servicos": "#C7321A"
+}
+
+(
+    p9.ggplot(grafico_classificacao) + 
+    p9.geom_line(p9.aes(x = 'data', y = 'variaveis', color = 'grupo')) + 
+    p9.labs(
+        title="Classificações - Acum. 12 meses",
+        x = '',
+        y = '',
+        caption = 'Elaborado por DIC-RF | Forluz'
+    ) +
+    p9.scale_color_manual(
+        values = cores_classificacao
+    ) +
+    p9.scale_x_date(date_labels='%Y') +
+    p9.theme(
+        plot_title=p9.element_text(weight='bold', 
+        ha = 'center'),
+        legend_title=p9.element_text(ha = 'center', weight='bold'))
+)
+
+
+```
+
+
+
+## *Índice de Difusão*
+
+O grau de dispersão da inflação tem mostrado alívio, o que vai ao encontro da percepção de arrefecimento inflacionário. 
+
+
+
+```{python}
+#| fig-align: center
+grafico_difusao = (
+    difusao_tratado
+    .reset_index()
+    .assign(
+        Difusao_12M = lambda x: x['difusao'].rolling(window = 12).apply(lambda x: x.mean()
+        )
+    )
+    .melt(
+        id_vars = 'data',
+        value_name = 'variavel'
+    )
+    .rename(
+        {'variable': 'metrica'},
+        axis = 'columns'
+    )
+    .query("data >= '2020-12-31'")
+    .assign(
+        variavel = lambda x: x['variavel'].round(2)
+    )
+)
+
+cores_difusao = {
+    'difusao': '#C7961A',
+    'Difusao_12M': 'black'
+}
+
+ultimo_dado = (
+    grafico_difusao
+    .groupby(by=['metrica'])
+    .tail(1)
+)
+(
+    p9.ggplot(grafico_difusao) + 
+    p9.geom_line(p9.aes(x = 'data', y = 'variavel', color = 'metrica')) +
+    p9.labs(
+        title = 'Índice de difusão - Mensal e em 12 meses',
+        x = '',
+        y = '',
+        caption = 'Elaborado por DIC-RF | Forluz'
+    ) + 
+    p9.theme(
+        plot_title=p9.element_text(weight='bold', ha = 'center'), 
+        legend_title = p9.element_text(weight='bold', ha = 'center')
+    ) + 
+    p9.scale_x_date(date_labels = '%Y') + 
+    p9.scale_color_manual(
+        values = cores_difusao
+    ) + 
+    p9.geom_label(
+        data=ultimo_dado,
+        mapping=p9.aes(x = 'data', y = 'variavel', label = 'variavel'),
+        fill = ['#C7961A', 'black'],
+        color = 'white',
+        ha='left',
+        va='center',
+        nudge_x=-130,
+        size=7, 
+        fontweight='bold' 
+    )
+)
+
+
+
+```
+
+
+## *Núcleos de inflação*
+
+
+
