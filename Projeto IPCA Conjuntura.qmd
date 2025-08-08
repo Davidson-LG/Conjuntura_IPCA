@@ -9,6 +9,9 @@ title-block-banner: "#0f0c0fff"
 execute: 
   echo: false
   warning: false
+project:
+    type: website
+    output-dir: docs
 ---
 
 ```{python}

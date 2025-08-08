@@ -1,0 +1,13 @@
+title: "Relatório Mensal"
+subtitle: "Análise do IPCA - IBGE"
+date: last-modified
+lang: pt
+format: html
+author: "DIC-RF"
+title-block-banner: "#0f0c0fff"
+execute: 
+  echo: false
+  warning: false
+project:
+  type: website
+  output-dir: docs
