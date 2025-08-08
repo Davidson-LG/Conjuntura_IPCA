@@ -30,9 +30,7 @@ jobs:
       run: quarto render "Projeto IPCA Conjuntura.qmd" --to html
 
 
-    - name: Publish to GitHub Pages
-      uses: quarto-dev/quarto-actions/publish@v2
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
       with:
-        target: gh-pages
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
