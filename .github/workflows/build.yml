@@ -2,7 +2,7 @@ name: Render Quarto Report
 
 on:
   schedule:
-    - cron: "0 12 * * *"   # roda todo dia às 12:00 UTC (9h no Brasil)
+    - cron: "0 11 * * *"   # roda todo dia às 12:00 UTC (8h no Brasil)
   workflow_dispatch:        # permite rodar manualmente também
 
 jobs:
@@ -34,3 +34,4 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: _site
