@@ -27,7 +27,8 @@ jobs:
         pip install -r requirements.txt
 
     - name: Render Quarto report
-      run: quarto render relatorio.qmd --to html
+      run: quarto render "Projeto IPCA Conjuntura.qmd" --to html
+
 
     - name: Publish to GitHub Pages
       uses: quarto-dev/quarto-actions/publish@v2
