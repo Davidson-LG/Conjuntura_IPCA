@@ -559,6 +559,119 @@ ultimo_dado = (
 
 
 ## *Núcleos de inflação*
+Os núcleos de inflação têm arrefecido. Todos eles indicaram suavização em relação aos meses anteriores. A média dos principais núcleos segue em trajetória de queda, refletindo o impacto do ambiente macroeconômico mais favorável e da redução das pressões de custos. Apesar disso, alguns componentes ainda permanecem acima do centro da meta, sugerindo cautela na avaliação do cenário prospectivo. O comportamento benigno dos núcleos reforça a sinalização de convergência da inflação para patamares mais próximos do objetivo estabelecido pelo Banco Central, mas o monitoramento contínuo segue sendo fundamental diante de possíveis choques de oferta ou mudanças no cenário internacional.
+
+```{python}
+#| fig-align: center
+
+grafico_nucleos = (
+    nucleos_tratado_12m
+    .reset_index()
+    .query(
+        "data >= '2021-12-31'"
+    )
+    .melt(
+        id_vars = 'data',
+        value_name= 'variavel' 
+    )
+    .assign(
+        variavel = lambda x: x['variavel'].round(2)
+    )
+    .rename(
+        {
+            'variable': 'Núcleos'
+        },
+        axis='columns'
+    )
+)
+
+cores_nucleos = {
+    "DP": "#CCCCCC",
+    "EX0": "#CCCCCC",
+    "EX3": "#CCCCCC",
+    "MS": "#CCCCCC",
+    "P55": "#CCCCCC",
+    "media_nucleos": "#C7961A"
+}
+
+
+(
+    p9.ggplot(grafico_nucleos, p9.aes(x = 'data', y = 'variavel', color = 'Núcleos')) +
+    p9.geom_line(stat = 'identity') + 
+    p9.labs(
+        title = 'Núcleos de inflação em 12 meses',
+        x = '',
+        y = '',
+        caption = 'Elaborado por DIC-RF | Forluz'
+    ) + 
+    p9.scale_color_manual(values = cores_nucleos) + 
+    p9.theme(
+        plot_title = p9.element_text(weight='bold', ha='center'),
+        legend_title= p9.element_text(weight='bold', ha='center')
+    ) + 
+    p9.scale_x_date(
+        date_labels='%Y'
+    )
+
+)
+
+
+```
 
 
 
+```{python}
+#| fig-align: center
+
+grafico_nucleos_mes = (
+    nucleos_tratado
+    .reset_index()
+    .query(
+        "data >= '2021-12-31'"
+    )
+    .melt(
+        id_vars = 'data',
+        value_name= 'variavel' 
+    )
+    .assign(
+        variavel = lambda x: x['variavel'].round(2)
+    )
+    .rename(
+        {
+            'variable': 'Núcleos'
+        },
+        axis='columns'
+    )
+)
+
+cores_nucleos_mes = {
+    "DP": "#CCCCCC",
+    "EX0": "#CCCCCC",
+    "EX3": "#CCCCCC",
+    "MS": "#CCCCCC",
+    "P55": "#CCCCCC",
+    "media_nucleos": "#252545"
+}
+
+
+(
+    p9.ggplot(grafico_nucleos_mes, p9.aes(x = 'data', y = 'variavel', color = 'Núcleos')) +
+    p9.geom_line(stat = 'identity') + 
+    p9.labs(
+        title = 'Núcleos de inflação - Mensal',
+        x = '',
+        y = '',
+        caption = 'Elaborado por DIC-RF | Forluz'
+    ) + 
+    p9.scale_color_manual(values = cores_nucleos_mes) + 
+    p9.theme(
+        plot_title = p9.element_text(weight='bold', ha='center'),
+        legend_title= p9.element_text(weight='bold', ha='center')
+    ) + 
+    p9.scale_x_date(
+        date_labels='%Y'
+    )
+
+)
+
+```
