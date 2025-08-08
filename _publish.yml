@@ -1,0 +1,4 @@
+- source: project
+  quarto-pub:
+    - id: 1664912e-85b1-4ccf-afc4-c248ab40e02e
+      url: 'https://davidson.quarto.pub/conjuntura_ipca'
