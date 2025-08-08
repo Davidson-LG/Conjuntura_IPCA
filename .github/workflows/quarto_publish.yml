@@ -29,8 +29,12 @@ jobs:
 
     - name: Install Quarto CLI
       run: |
-        wget https://github.com/quarto-dev/quarto-cli/releases/latest/download/quarto-linux-amd64.deb
-        sudo dpkg -i quarto-linux-amd64.deb
+        sudo apt-get update
+        sudo apt-get install -y gnupg curl software-properties-common
+        curl -fsSL https://quarto.org/keys/public.asc | sudo tee /etc/apt/trusted.gpg.d/quarto.asc
+        sudo add-apt-repository "deb https://quarto.org/download/linux/ focal main"
+        sudo apt-get update
+        sudo apt-get install -y quarto
 
 
     - name: Render Quarto file
