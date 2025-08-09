@@ -24,7 +24,6 @@ import dbnomics
 import datetime
 import matplotlib as mt
 import plotnine as p9
-import openai
 ```
 
 ```{python}
