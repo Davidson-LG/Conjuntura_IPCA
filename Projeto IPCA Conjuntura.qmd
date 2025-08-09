@@ -24,6 +24,7 @@ import dbnomics
 import datetime
 import matplotlib as mt
 import plotnine as p9
+import openai
 ```
 
 ```{python}
@@ -356,7 +357,7 @@ grafico_variacao_grupo = (
 
 ```
 
-## *Ponderação por grupo*
+## *Ponderação por grupo de itens*
 
 O grupo de habitação teve a principal contribuição nos preços no último mês. Além disso, observa-se que alimentação e transportes também apresentaram participações relevantes, refletindo movimentos específicos desses segmentos no período analisado.
 
