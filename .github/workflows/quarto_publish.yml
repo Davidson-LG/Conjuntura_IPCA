@@ -1,16 +1,41 @@
-name: Test Secret
+name: Render and Publish Quarto to Quarto Pub
 
-on: [workflow_dispatch]
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: "0 11 * * 1" # toda segunda às 08h Brasília (11h UTC)
 
 jobs:
-  test-secret:
+  build-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check Secret exists
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
         run: |
-          if [ -z "${{ secrets.QUARTO_PUB_AUTH_TOKEN }}" ]; then
-            echo "Token is empty"
-            exit 1
-          else
-            echo "Token is set"
-          fi
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Install Quarto CLI
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: "1.3.450" # usa sua versão local
+
+      - name: Render Quarto project
+        run: quarto render "Projeto IPCA Conjuntura.qmd"
+
+      - name: Publish to Quarto Pub
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: quarto-pub
+        env:
+          QUARTO_PUB_AUTH_TOKEN: ${{ secrets.QUARTO_PUB_AUTH_TOKEN }}
